@@ -1,0 +1,61 @@
+version: "3"
+
+volumes:
+  nextcloud:
+    driver_opts:
+      type: none
+      device: /mnt/disk1/nextcloud
+      o: bind
+  db:
+    driver_opts:
+      type: none
+      device: /mnt/disk1/db
+      o: bind
+
+services:
+  db:
+    container_name: nextcloud_db
+    image: mariadb:10.5
+    restart: always
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    volumes:
+      - db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+
+  app:
+    container_name: nextcloud
+    image: nextcloud
+    restart: always
+    ports:
+      - 9090:80
+    links:
+      - db
+    volumes:
+      - nextcloud:/var/www/html
+    environment:
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=db
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"
+    environment:
+      TZ: 'America/Sao_Paulo'
+      WEBPASSWORD: ${MYSQL_PASSWORD}
+    # Volumes store your data between container upgrades
+    volumes:
+      - '/mnt/disk1/pihole/etc-pihole:/etc/pihole'
+      - '/mnt/disk1/pihole/etc-dnsmasq.d:/etc/dnsmasq.d'
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    restart: unless-stopped
