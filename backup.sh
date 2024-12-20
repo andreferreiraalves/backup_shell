@@ -17,6 +17,10 @@ if [ -e /home/andre/temp/*.sql ]; then
 	rm /home/andre/temp/*.sql
 fi
 
+log "backup postgres affine"
 docker exec -t postgres pg_dumpall -c -U postgres > "$dumpsql"
 
+log "generate backup nextcloud"
 tar -cvzf "/mnt/backup/teste/$data.tar.gz" "$dumpsql" /mnt/volume/affine/storage/ /mnt/volume/nextcloud/data/admin/files
+
+log "done"
