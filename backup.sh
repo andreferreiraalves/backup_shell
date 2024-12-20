@@ -11,16 +11,21 @@ log() {
 
 ###
 
-if [ -e /home/andre/temp/*.sql ]; then
-	log "removing old files"
-
-	rm /home/andre/temp/*.sql
-fi
+log "removing old files"
+rm /home/andre/temp/*.sql
 
 log "backup postgres affine"
-docker exec -t postgres pg_dumpall -c -U postgres > "$dumpsql"
+docker exec -t postgres pg_dumpall -c -U affine > $dumpsql
 
-log "generate backup nextcloud"
-tar -cvzf "/mnt/backup/teste/$data.tar.gz" "$dumpsql" /mnt/volume/affine/storage/ /mnt/volume/nextcloud/data/admin/files
+if [ $? -eq 0 ]; then
+	log "creating tar.gz file"
+	tar -cvzf /mnt/backup/teste/$data.tar.gz $dumpsql /mnt/volume/affine/storage/ /mnt/volume/nextcloud/data/admin/files
 
-log "done"
+	if [ $? -eq 0 ]; then
+		log "done, file created /mnt/backup/teste/$data.tar.gz"
+	else
+		log "ERROR ON CREATING TAR.GZ FILE"
+	fi
+else
+	log "ERROR ON BACKUP POSTGRES"
+fi
