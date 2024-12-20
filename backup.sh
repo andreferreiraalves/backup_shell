@@ -2,7 +2,7 @@
 
 data=$(date '+%Y-%m-%d')
 logfile="/home/andre/logs/backup_$data.log"
-dumpsql="/home/andre/temp/dump_$(date +%Y-%m-%d"_"%H_%M_%S).sql"
+dumpsql="/mnt/volume/affine/dump_$(date +%Y-%m-%d"_"%H_%M_%S).sql"
 
 log() {
 	mensagem="$(date '+%Y-%m-%d %H:%M:%S') - $1"
@@ -12,7 +12,7 @@ log() {
 ###
 
 log "removing old files"
-rm /home/andre/temp/*.sql
+rm /mnt/volume/affine/*.sql
 
 log "backup postgres affine"
 docker exec -t postgres pg_dumpall -c -U affine > $dumpsql
